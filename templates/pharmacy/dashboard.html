@@ -1,0 +1,237 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+{% block body %}
+
+<div class="page-hero">
+  <div class="container" style="position:relative;">
+    <img src="{{ url_for('static', filename='img/md2.jpg') }}" class="page-hero-img" alt="">
+    <div class="page-hero-badge"><i class="fas fa-tachometer-alt"></i> Admin Control Center</div>
+    <h1><i class="fas fa-tachometer-alt me-3"></i>Dashboard</h1>
+    <p>Overview of your pharmacy supply network — orders, inventory, and performance at a glance.</p>
+    <div class="d-flex gap-4 mt-3 flex-wrap">
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-store me-1" style="color:var(--accent);"></i>{{ total_pharmacies }} pharmacies registered</span>
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-clipboard-list me-1" style="color:var(--success);"></i>{{ total_orders }} total orders</span>
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-clock me-1" style="color:var(--warning);"></i>{{ pending_orders }} pending review</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Stat Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="stat-card" style="border-left-color:var(--accent);">
+        <i class="fas fa-store stat-icon"></i>
+        <div class="stat-number">{{ total_pharmacies }}</div>
+        <div class="stat-label">Pharmacies</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <a href="/orders" class="text-decoration-none">
+        <div class="stat-card" style="border-left-color:var(--success);">
+          <i class="fas fa-clipboard-list stat-icon"></i>
+          <div class="stat-number" style="color:var(--success)">{{ total_orders }}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <a href="/orders?status=Pending" class="text-decoration-none">
+        <div class="stat-card" style="border-left-color:var(--warning);">
+          <i class="fas fa-clock stat-icon"></i>
+          <div class="stat-number" style="color:var(--warning)">{{ pending_orders }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <a href="/orders?status=Approved" class="text-decoration-none">
+        <div class="stat-card" style="border-left-color:var(--info);">
+          <i class="fas fa-thumbs-up stat-icon"></i>
+          <div class="stat-number" style="color:var(--info)">{{ approved_orders }}</div>
+          <div class="stat-label">Approved</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <a href="/orders?status=Delivered" class="text-decoration-none">
+        <div class="stat-card" style="border-left-color:var(--success);">
+          <i class="fas fa-check-double stat-icon"></i>
+          <div class="stat-number" style="color:var(--success)">{{ delivered_orders }}</div>
+          <div class="stat-label">Delivered</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <a href="/items" class="text-decoration-none">
+        <div class="stat-card" style="border-left-color:var(--purple);">
+          <i class="fas fa-pills stat-icon"></i>
+          <div class="stat-number" style="color:var(--purple)">{{ total_medicines }}</div>
+          <div class="stat-label">Medicines</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <div class="card p-4 chart-card">
+        <h6 class="section-title mb-4">Orders by Status</h6>
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card p-4 chart-card">
+        <h6 class="section-title mb-4">Monthly Orders (Last 6 Months)</h6>
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pharmacy Table -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="section-title mb-0" style="flex:1;">Registered Pharmacies</h5>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="/reports" class="btn btn-outline-secondary btn-sm"><i class="fas fa-chart-line me-1"></i>Reports</a>
+      <a href="/insert" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Add Pharmacy</a>
+    </div>
+  </div>
+
+  <!-- Search bar -->
+  <form method="get" action="/dashboard" class="filter-bar mb-3">
+    <div class="input-group" style="max-width:360px;">
+      <span class="input-group-text"><i class="fas fa-search"></i></span>
+      <input type="text" name="q" class="form-control" placeholder="Search pharmacies…" value="{{ search_q }}">
+      <button class="btn btn-primary" type="submit">Search</button>
+      {% if search_q %}
+      <a href="/dashboard" class="btn btn-outline-secondary">Clear</a>
+      {% endif %}
+    </div>
+    {% if search_q %}
+    <span class="text-muted small">Results for "<strong>{{ search_q }}</strong>"</span>
+    {% endif %}
+  </form>
+
+  <div class="card mb-4">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Pharmacy Name</th>
+              <th>Owner</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for post in posts %}
+            <tr>
+              <td><span class="badge bg-secondary">{{ post.mid }}</span></td>
+              <td class="fw-medium">{{ post.medical_name }}</td>
+              <td>{{ post.owner_name }}</td>
+              <td><i class="fas fa-phone me-1 text-muted" style="font-size:.75rem;"></i>{{ post.phone_no }}</td>
+              <td class="text-muted" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ post.address }}</td>
+              <td>
+                <a href="/edit/{{ post.mid }}" class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="fas fa-edit"></i></a>
+                <form action="/delete/{{ post.mid }}" method="post" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" onclick="return confirm('Delete {{ post.medical_name }}?')" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <i class="fas fa-store"></i>
+                  <p class="mb-2">No pharmacies registered yet.</p>
+                  <a href="/insert" class="btn btn-primary btn-sm">Add First Pharmacy</a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% if pagination and pagination.pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-end">
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('pharmacy.dashboard', page=pagination.prev_num, q=search_q) if pagination.has_prev else '#' }}">Previous</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+        {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('pharmacy.dashboard', page=p, q=search_q) }}">{{ p }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('pharmacy.dashboard', page=pagination.next_num, q=search_q) if pagination.has_next else '#' }}">Next</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartDefaults = {
+  color: '#94a3b8',
+  borderColor: 'rgba(255,255,255,0.06)',
+};
+Chart.defaults.color = chartDefaults.color;
+
+// Donut
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Pending', 'Approved', 'Delivered'],
+    datasets: [{
+      data: [{{ orders_by_status['Pending'] }}, {{ orders_by_status['Approved'] }}, {{ orders_by_status['Delivered'] }}],
+      backgroundColor: ['rgba(245,158,11,0.8)', 'rgba(6,182,212,0.8)', 'rgba(16,185,129,0.8)'],
+      borderColor: ['#f59e0b','#06b6d4','#10b981'],
+      borderWidth: 2,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '65%',
+    plugins: { legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } } }
+  }
+});
+
+// Bar
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ monthly_labels | tojson }},
+    datasets: [{
+      label: 'Orders',
+      data: {{ monthly_counts | tojson }},
+      backgroundColor: 'rgba(59,130,246,0.6)',
+      borderColor: '#3b82f6',
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { precision: 0, color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      x: { ticks: { color: '#64748b' }, grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

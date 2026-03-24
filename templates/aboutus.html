@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block title %}About — {{ app_name }}{% endblock %}
+{% block body %}
+
+<div class="page-hero">
+  <div class="container">
+    <div class="page-hero-badge"><i class="fas fa-info-circle"></i> About This Project</div>
+    <h1><i class="fas fa-clinic-medical me-3"></i>{{ app_name }}</h1>
+    <p>A Flask-based DBMS mini project — built by Avinash</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+
+      <div class="card p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-lightbulb me-2" style="color:var(--warning)"></i>The Problem We Solve</h5>
+        <p class="text-muted mb-0">
+          Pharmacies often struggle with disorganized stock ordering, no audit trail, and no central system for tracking supply requests. This system bridges that gap — giving administrators full visibility into the supply chain, while allowing customers to place orders and track their own requests independently.
+        </p>
+      </div>
+
+      <div class="card p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-layer-group me-2" style="color:var(--accent)"></i>Tech Stack</h5>
+        <div class="row g-3">
+          {% set stack = [
+            ('fab fa-python','Python 3 / Flask','var(--accent)'),
+            ('fas fa-database','PostgreSQL / SQLite','var(--success)'),
+            ('fab fa-bootstrap','Bootstrap 5','#7952b3'),
+            ('fas fa-chart-bar','Chart.js','var(--warning)'),
+            ('fas fa-lock','Werkzeug Security','var(--danger)'),
+            ('fas fa-cloud','Render / Railway','var(--info)'),
+          ] %}
+          {% for icon, label, color in stack %}
+          <div class="col-6 col-md-4">
+            <div class="d-flex align-items-center gap-3 p-3" style="background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--divider);">
+              <i class="{{ icon }} fa-lg" style="color:{{ color }};width:20px;"></i>
+              <span class="small fw-medium">{{ label }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-star me-2" style="color:var(--warning)"></i>Key Features</h5>
+        <div class="row g-2">
+          {% set features = [
+            'Pharmacy registration & management (CRUD)',
+            'Order pipeline: Pending → Approved → Delivered',
+            'Customer role: register, browse, order, track',
+            'Dashboard with KPI cards + Chart.js analytics',
+            'CSV export for orders & audit logs',
+            'Print/PDF order view',
+            'Searchable & paginated medicine/product catalog',
+            'CSRF protection on all forms',
+            'Session timeout & password hashing',
+            'Flask Blueprints architecture',
+            'Auto-seed demo data (toggleable)',
+            'PostgreSQL + SQLite fallback support',
+          ] %}
+          {% for f in features %}
+          <div class="col-md-6">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;"></i>
+              <span class="small">{{ f }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-user me-2" style="color:var(--accent)"></i>Developer</h5>
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+          <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--navy-500));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">
+            <i class="fas fa-user" style="color:#fff;"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-5 mb-1">Avinash</div>
+            <div class="text-muted small mb-2">DBMS Mini Project — 2026 &nbsp;|&nbsp; Flask · PostgreSQL · Bootstrap</div>
+            <div class="d-flex gap-3">
+              <a href="https://github.com/avinash2004avii-jpg/" target="_blank" class="btn btn-outline-secondary btn-sm">
+                <i class="fab fa-github me-1"></i>GitHub
+              </a>
+              <a href="/api/health" target="_blank" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-heartbeat me-1"></i>API Health
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

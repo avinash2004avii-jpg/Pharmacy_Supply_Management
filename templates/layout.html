@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link href="{{ url_for('static', filename='css/fallback-ui.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <div class="brand-icon"><i class="fas fa-clinic-medical"></i></div>
+      {{ app_name }}
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto gap-1 align-items-lg-center">
+        {% if session.get('role') == 'admin' %}
+          {% set nav_items = [
+            ('/dashboard',  'fas fa-tachometer-alt', 'Dashboard'),
+            ('/insert',     'fas fa-plus-circle',    'Add Pharmacy'),
+            ('/medicines',  'fas fa-pills',          'Place Order'),
+            ('/orders',     'fas fa-clipboard-list', 'Orders'),
+            ('/search',     'fas fa-search',         'Search'),
+            ('/reports',    'fas fa-chart-line',     'Reports'),
+            ('/logs',       'fas fa-history',        'Logs'),
+          ] %}
+          {% for href, icon, label in nav_items %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == href %}active{% endif %}" href="{{ href }}">
+              <i class="{{ icon }} me-1"></i>{{ label }}
+            </a>
+          </li>
+          {% endfor %}
+          <li class="nav-item ms-lg-2">
+            <a class="nav-link text-warning" href="/logout" onclick="return confirm('Logout from admin?')">
+              <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+          </li>
+
+        {% elif session.get('role') == 'customer' %}
+          <li class="nav-item">
+            <span class="nav-link text-muted small">
+              <i class="fas fa-user-circle me-1"></i>{{ session.get('customer_name','Customer') }}
+            </span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/customer/catalog' %}active{% endif %}" href="/customer/catalog">
+              <i class="fas fa-store me-1"></i>Catalog
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/customer/orders' %}active{% endif %}" href="/customer/orders">
+              <i class="fas fa-shopping-basket me-1"></i>My Orders
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2">
+            <a class="nav-link text-warning" href="/customer/logout" onclick="return confirm('Logout?')">
+              <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+          </li>
+
+        {% else %}
+          <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/"><i class="fas fa-home me-1"></i>Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/aboutus"><i class="fas fa-info-circle me-1"></i>About</a></li>
+          <li class="nav-item"><a class="nav-link" href="/customer/login"><i class="fas fa-user me-1"></i>Customer Login</a></li>
+          <li class="nav-item">
+            <a class="btn btn-primary btn-sm ms-lg-2 px-3" href="/login">
+              <i class="fas fa-user-shield me-1"></i>Admin Login
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1090;">
+    {% for category, message in messages %}
+    <div class="toast align-items-center text-bg-{{ category }} border-0 mb-2" role="alert" data-bs-delay="4000" data-bs-autohide="true">
+      <div class="d-flex">
+        <div class="toast-body fw-medium">
+          {% if category == 'success' %}<i class="fas fa-check-circle me-2"></i>
+          {% elif category == 'danger' %}<i class="fas fa-exclamation-circle me-2"></i>
+          {% elif category == 'warning' %}<i class="fas fa-triangle-exclamation me-2"></i>
+          {% else %}<i class="fas fa-info-circle me-2"></i>{% endif %}
+          {{ message }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  {% block body %}{% endblock %}
+</main>
+
+<footer class="mt-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <p class="mb-1 fw-semibold" style="color:var(--text-secondary)">
+          <i class="fas fa-clinic-medical me-2" style="color:var(--accent)"></i>{{ app_name }}
+        </p>
+        <p class="mb-0" style="font-size:0.8rem;">Built by Avinash &copy; 2026</p>
+      </div>
+      <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <a href="https://github.com/avinash2004avii-jpg/" target="_blank" class="me-3" title="GitHub">
+          <i class="fab fa-github fa-lg"></i>
+        </a>
+        <a href="/api/health" target="_blank" title="API Health">
+          <i class="fas fa-heartbeat fa-lg"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Auto-show toasts
+  document.querySelectorAll('.toast').forEach(el => new bootstrap.Toast(el).show());
+
+  // Loading spinner on form submit
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function () {
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn && !btn.dataset.loading) {
+        btn.dataset.loading = '1';
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        btn.disabled = true;
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; delete btn.dataset.loading; }, 8000);
+      }
+    });
+  });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

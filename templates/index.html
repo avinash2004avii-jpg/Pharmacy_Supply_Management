@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+{% block title %}{{ app_name }} — Home{% endblock %}
+{% block body %}
+
+<div class="page-hero text-center" style="padding:80px 0 64px;">
+  <div class="container">
+    <div class="page-hero-badge"><i class="fas fa-shield-alt"></i> Secure · Reliable · Fast</div>
+    <h1 style="font-size:2.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:1rem;">
+      Pharmacy Supply<br>
+      <span style="background:linear-gradient(135deg,#3b82f6,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Management System</span>
+    </h1>
+    <p class="lead mb-5" style="opacity:0.65;max-width:560px;margin:0 auto 2rem;">
+      Structured workflow for pharmacy onboarding, medicine ordering, inventory search, and complete audit tracking.
+    </p>
+
+    <div class="row g-3 justify-content-center mb-5">
+      <div class="col-5 col-md-2">
+        <div class="stat-card text-center">
+          <div class="stat-number counter" data-target="{{ total_pharmacies }}">0</div>
+          <div class="stat-label">Pharmacies</div>
+        </div>
+      </div>
+      <div class="col-5 col-md-2">
+        <div class="stat-card text-center">
+          <div class="stat-number counter" data-target="{{ total_orders }}">0</div>
+          <div class="stat-label">Orders</div>
+        </div>
+      </div>
+      <div class="col-5 col-md-2">
+        <div class="stat-card text-center">
+          <div class="stat-number counter" data-target="{{ total_medicines }}">0</div>
+          <div class="stat-label">Medicines</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="/login" class="btn btn-primary btn-lg px-5">
+        <i class="fas fa-user-shield me-2"></i>Admin Login
+      </a>
+      <a href="/customer/register" class="btn btn-outline-secondary btn-lg px-4">
+        <i class="fas fa-user-plus me-2"></i>Register as Customer
+      </a>
+      <a href="/customer/login" class="btn btn-outline-secondary btn-lg px-4">
+        <i class="fas fa-user me-2"></i>Customer Login
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card p-4 h-100 text-center">
+        <div style="width:56px;height:56px;background:rgba(59,130,246,0.12);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="fas fa-store fa-xl" style="color:var(--accent)"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Pharmacy Registry</h5>
+        <p class="text-muted small mb-0">Register and manage pharmacy stores with complete owner details, contact info, and address tracking.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-4 h-100 text-center">
+        <div style="width:56px;height:56px;background:rgba(16,185,129,0.12);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="fas fa-pills fa-xl" style="color:var(--success)"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Order Management</h5>
+        <p class="text-muted small mb-0">Place and track medicine/product orders with a full status pipeline: Pending → Approved → Delivered.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-4 h-100 text-center">
+        <div style="width:56px;height:56px;background:rgba(139,92,246,0.12);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="fas fa-history fa-xl" style="color:var(--purple)"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Audit Logs</h5>
+        <p class="text-muted small mb-0">Every insert, update, and delete is automatically logged with timestamps for complete traceability.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-4 mb-4" style="background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(15,52,96,0.2));border-color:rgba(59,130,246,0.2);">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h5 class="fw-bold mb-1">Two-Role System</h5>
+        <p class="text-muted small mb-0">Admin controls the full supply chain. Customers can browse the catalog, place orders, and track their own deliveries.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="/customer/register" class="btn btn-primary">Get Started <i class="fas fa-arrow-right ms-2"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = Number(el.dataset.target || 0);
+    const step = Math.max(1, Math.ceil(target / 40));
+    let val = 0;
+    const timer = setInterval(() => {
+      val = Math.min(val + step, target);
+      el.textContent = val;
+      if (val >= target) clearInterval(timer);
+    }, 18);
+  });
+});
+</script>
+{% endblock %}

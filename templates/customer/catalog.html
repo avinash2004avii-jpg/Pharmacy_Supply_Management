@@ -1,0 +1,149 @@
+{% extends "layout.html" %}
+{% block title %}Catalog — {{ app_name }}{% endblock %}
+{% block body %}
+<div class="page-hero">
+  <div class="container" style="position:relative;">
+    <img src="{{ url_for('static', filename='img/home-bg.jpg') }}" class="page-hero-img" alt="">
+    <div class="page-hero-badge"><i class="fas fa-store"></i> Customer Portal</div>
+    <h1><i class="fas fa-store me-3"></i>Medicine Catalog</h1>
+    <p>Welcome, <strong>{{ customer.full_name }}</strong>! Browse available items and submit your order request.</p>
+    <div class="d-flex gap-4 mt-3 flex-wrap">
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-pills me-1" style="color:var(--accent);"></i>{{ medicines_list|length }} medicines available</span>
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-box me-1" style="color:var(--info);"></i>{{ products_list|length }} products available</span>
+    </div>
+  </div>
+</div>
+<div class="container pb-5">
+
+  <!-- Search bar -->
+  <form method="get" action="/customer/catalog" class="filter-bar mb-4">
+    <div class="input-group" style="max-width:360px;">
+      <span class="input-group-text"><i class="fas fa-search"></i></span>
+      <input type="text" name="q" class="form-control" placeholder="Search medicines or products…" value="{{ search_q }}">
+      <button class="btn btn-primary" type="submit">Search</button>
+      {% if search_q %}<a href="/customer/catalog" class="btn btn-outline-secondary">Clear</a>{% endif %}
+    </div>
+    {% if search_q %}<span class="text-muted small">Results for "<strong>{{ search_q }}</strong>"</span>{% endif %}
+  </form>
+
+  <div class="row g-4">
+    <!-- Catalog lists -->
+    <div class="col-lg-7">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="card p-4 h-100">
+            <h6 class="section-title mb-3"><i class="fas fa-pills me-2" style="color:var(--accent)"></i>Medicines</h6>
+            <ul class="list-group list-group-flush">
+              {% for item in medicines_list %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ item.medicine }}<span class="badge bg-primary">Medicine</span>
+              </li>
+              {% else %}
+              <li class="list-group-item text-muted">No medicines found.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card p-4 h-100">
+            <h6 class="section-title mb-3"><i class="fas fa-box me-2" style="color:var(--info)"></i>Products</h6>
+            <ul class="list-group list-group-flush">
+              {% for item in products_list %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ item.product }}<span class="badge bg-info">Product</span>
+              </li>
+              {% else %}
+              <li class="list-group-item text-muted">No products found.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order form -->
+    <div class="col-lg-5">
+      <div class="card p-4">
+        <h6 class="section-title mb-4"><i class="fas fa-shopping-cart me-2" style="color:var(--success)"></i>Place Order Request</h6>
+        <form action="/customer/catalog" method="post" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label">Medicines Needed</label>
+            <div class="position-relative">
+              <input type="text" name="medicines" id="cust-medicines" class="form-control" placeholder="e.g. Paracetamol, Ibuprofen" required autocomplete="off">
+              <div id="cust-medicines-ac" class="autocomplete-list" style="display:none;"></div>
+            </div>
+            <div class="form-text">Comma-separated from the list above.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Products Needed</label>
+            <div class="position-relative">
+              <input type="text" name="products" id="cust-products" class="form-control" placeholder="e.g. Surgical Mask" required autocomplete="off">
+              <div id="cust-products-ac" class="autocomplete-list" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Estimated Amount (₹)</label>
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" name="amount" class="form-control" placeholder="Order amount" min="1" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-shopping-cart me-2"></i>Submit Order Request
+          </button>
+        </form>
+        <div class="text-center mt-3">
+          <a href="/customer/orders" class="small text-muted"><i class="fas fa-list me-1"></i>View My Orders</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<script>
+const MEDICINES = {{ medicines_list | map(attribute='medicine') | list | tojson }};
+const PRODUCTS  = {{ products_list  | map(attribute='product')  | list | tojson }};
+
+function setupTagAutocomplete(inputId, dropdownId, allItems) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  let activeIdx = -1;
+  input.addEventListener('input', function() {
+    const parts = this.value.split(',');
+    const term = parts[parts.length - 1].trim().toLowerCase();
+    dropdown.innerHTML = ''; activeIdx = -1;
+    if (!term) { dropdown.style.display = 'none'; return; }
+    const matches = allItems.filter(i => i.toLowerCase().includes(term));
+    if (!matches.length) { dropdown.style.display = 'none'; return; }
+    matches.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'ac-item'; div.textContent = m;
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        const existing = input.value.split(',').slice(0,-1).map(s=>s.trim()).filter(Boolean);
+        existing.push(m);
+        input.value = existing.join(', ') + ', ';
+        dropdown.style.display = 'none'; input.focus();
+      });
+      dropdown.appendChild(div);
+    });
+    dropdown.style.display = 'block';
+  });
+  input.addEventListener('keydown', function(e) {
+    const items = dropdown.querySelectorAll('.ac-item');
+    if (!items.length) return;
+    if (e.key==='ArrowDown') activeIdx=Math.min(activeIdx+1,items.length-1);
+    else if (e.key==='ArrowUp') activeIdx=Math.max(activeIdx-1,0);
+    else if (e.key==='Enter' && activeIdx>=0) { e.preventDefault(); items[activeIdx].dispatchEvent(new Event('mousedown')); } else return;
+    items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));
+  });
+  document.addEventListener('click', function(e) {
+    if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display='none';
+  });
+}
+
+setupTagAutocomplete('cust-medicines', 'cust-medicines-ac', MEDICINES);
+setupTagAutocomplete('cust-products',  'cust-products-ac',  PRODUCTS);
+</script>

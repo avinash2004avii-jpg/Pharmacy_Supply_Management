@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block title %}Audit Logs — {{ app_name }}{% endblock %}
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <div class="page-hero-badge"><i class="fas fa-history"></i> Audit Trail</div>
+    <h1><i class="fas fa-history me-3"></i>Audit Logs</h1>
+    <p>Complete record of every insert, update, and delete action with timestamps.</p>
+  </div>
+</div>
+<div class="container pb-5">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="/logs" class="btn btn-sm {% if not action_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+      <a href="/logs?action=INSERT" class="btn btn-sm {% if action_filter=='INSERT' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Inserts</a>
+      <a href="/logs?action=UPDATE" class="btn btn-sm {% if action_filter=='UPDATE' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Updates</a>
+      <a href="/logs?action=DELETE" class="btn btn-sm {% if action_filter=='DELETE' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Deletes</a>
+      <a href="/logs?action=ORDER" class="btn btn-sm {% if action_filter=='ORDER' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Orders</a>
+    </div>
+    <a href="/logs/export/csv" class="btn btn-outline-success btn-sm"><i class="fas fa-file-csv me-1"></i>Export CSV</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr><th>#</th><th>Shop ID</th><th>Action</th><th>Date &amp; Time</th></tr>
+          </thead>
+          <tbody>
+            {% for post in posts %}
+            <tr>
+              <td class="text-muted">{{ post.id }}</td>
+              <td><span class="badge bg-secondary">{{ post.mid or '—' }}</span></td>
+              <td>
+                {% if 'INSERTED' in post.action or 'INSERT' in post.action %}
+                  <span class="badge bg-success"><i class="fas fa-plus me-1"></i>{{ post.action }}</span>
+                {% elif 'DELETED' in post.action or 'DELETE' in post.action %}
+                  <span class="badge bg-danger"><i class="fas fa-trash me-1"></i>{{ post.action }}</span>
+                {% elif 'UPDATED' in post.action or 'UPDATE' in post.action %}
+                  <span class="badge bg-info"><i class="fas fa-edit me-1"></i>{{ post.action }}</span>
+                {% elif 'ORDER' in post.action %}
+                  <span class="badge bg-primary"><i class="fas fa-shopping-cart me-1"></i>{{ post.action }}</span>
+                {% else %}
+                  <span class="badge bg-warning">{{ post.action }}</span>
+                {% endif %}
+              </td>
+              <td class="text-muted" style="font-size:0.85rem;">{{ post.date }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4"><div class="empty-state"><i class="fas fa-history"></i><p>No audit logs yet.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% if pagination and pagination.pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-end">
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('inventory.logs', page=pagination.prev_num, action=action_filter) if pagination.has_prev else '#' }}">Previous</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1,left_current=1,right_current=2,right_edge=1) %}
+        {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('inventory.logs', page=p, action=action_filter) }}">{{ p }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('inventory.logs', page=pagination.next_num, action=action_filter) if pagination.has_next else '#' }}">Next</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

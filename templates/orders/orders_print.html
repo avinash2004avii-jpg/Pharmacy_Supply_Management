@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Orders Print View — {{ app_name }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #1a1a2e; font-size: 13px; }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .meta { color: #666; font-size: 12px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th { background: #1a1a2e; color: #fff; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { border-bottom: 1px solid #e5e7eb; padding: 9px 12px; }
+    tr:last-child td { border-bottom: none; }
+    .badge-pending  { background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-size:11px; }
+    .badge-approved { background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:11px; }
+    .badge-delivered{ background:#d1fae5; color:#065f46; padding:2px 8px; border-radius:4px; font-size:11px; }
+    .amount { font-weight: bold; }
+    .no-print { margin-bottom: 16px; }
+    @media print { .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()" style="padding:8px 20px;background:#0f3460;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">
+      🖨️ Print / Save as PDF
+    </button>
+    <a href="/orders" style="margin-left:12px;font-size:13px;color:#0f3460;">← Back to Orders</a>
+  </div>
+  <h1>{{ app_name }} — Orders Report</h1>
+  <p class="meta">Generated: {{ generated_at }} &nbsp;|&nbsp; Total orders: {{ posts | length }}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Pharmacy ID</th>
+        <th>Contact</th>
+        <th>Medicines</th>
+        <th>Products</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th style="text-align:right;">Amount (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+      <tr>
+        <td>#{{ post.id }}</td>
+        <td>{{ post.mid }}</td>
+        <td>{{ post.name }}</td>
+        <td>{{ post.medicines }}</td>
+        <td>{{ post.products }}</td>
+        <td>{{ post.email }}</td>
+        <td>
+          {% if post.status == 'Pending' %}<span class="badge-pending">Pending</span>
+          {% elif post.status == 'Approved' %}<span class="badge-approved">Approved</span>
+          {% else %}<span class="badge-delivered">Delivered</span>{% endif %}
+        </td>
+        <td style="text-align:right;" class="amount">₹{{ post.amount }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" style="text-align:center;color:#999;">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

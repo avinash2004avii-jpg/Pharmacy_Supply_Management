@@ -1,0 +1,9 @@
+{
+  "params": {
+    "app_name": "Pharmacy Supply Management System",
+    "description": "A Flask-based pharmacy supply chain management system with admin and customer roles.",
+    "author": "Avinash",
+    "github": "https://github.com/avinash2004avii-jpg/",
+    "version": "2.0.0"
+  }
+}

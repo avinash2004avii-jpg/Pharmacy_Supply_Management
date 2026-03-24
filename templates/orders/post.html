@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% block title %}Orders — {{ app_name }}{% endblock %}
+{% block body %}
+<div class="page-hero">
+  <div class="container" style="position:relative;">
+    <img src="{{ url_for('static', filename='img/md2.jpg') }}" class="page-hero-img" alt="">
+    <div class="page-hero-badge"><i class="fas fa-clipboard-list"></i> Order Management</div>
+    <h1><i class="fas fa-clipboard-list me-3"></i>All Orders</h1>
+    <p>View, filter, update status, and manage all pharmacy supply orders.</p>
+    <div class="d-flex gap-3 mt-3 flex-wrap">
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-circle me-1" style="color:var(--warning);"></i>Pending = awaiting review</span>
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-circle me-1" style="color:var(--info);"></i>Approved = confirmed</span>
+      <span style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-circle me-1" style="color:var(--success);"></i>Delivered = completed</span>
+    </div>
+  </div>
+</div>
+<div class="container pb-5">
+
+  <!-- Toolbar -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="/orders" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+      <a href="/orders?status=Pending" class="btn btn-sm {% if status_filter=='Pending' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Pending</a>
+      <a href="/orders?status=Approved" class="btn btn-sm {% if status_filter=='Approved' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Approved</a>
+      <a href="/orders?status=Delivered" class="btn btn-sm {% if status_filter=='Delivered' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Delivered</a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="/orders/print" target="_blank" class="btn btn-outline-dark btn-sm"><i class="fas fa-print me-1"></i>Print/PDF</a>
+      <a href="/orders/export/csv" class="btn btn-outline-success btn-sm"><i class="fas fa-file-csv me-1"></i>Export CSV</a>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <form method="get" action="/orders" class="filter-bar mb-3">
+    <input type="hidden" name="status" value="{{ status_filter }}">
+    <div class="input-group" style="max-width:360px;">
+      <span class="input-group-text"><i class="fas fa-search"></i></span>
+      <input type="text" name="q" class="form-control" placeholder="Search pharmacy ID, contact, medicine…" value="{{ search_q }}">
+      <button class="btn btn-primary" type="submit">Search</button>
+      {% if search_q %}
+      <a href="/orders{% if status_filter %}?status={{ status_filter }}{% endif %}" class="btn btn-outline-secondary">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Shop ID</th>
+              <th>Contact</th>
+              <th>Medicines</th>
+              <th>Products</th>
+              <th>Email</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for post in posts %}
+            <tr>
+              <td class="text-muted">{{ post.id }}</td>
+              <td><span class="badge bg-secondary">{{ post.mid }}</span></td>
+              <td class="fw-medium">{{ post.name }}</td>
+              <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ post.medicines }}">{{ post.medicines }}</td>
+              <td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ post.products }}">{{ post.products }}</td>
+              <td class="text-muted" style="font-size:0.8rem;">{{ post.email }}</td>
+              <td class="fw-medium">₹{{ post.amount }}</td>
+              <td>
+                {% if post.status == 'Pending' %}<span class="badge bg-warning">Pending</span>
+                {% elif post.status == 'Approved' %}<span class="badge bg-info">Approved</span>
+                {% else %}<span class="badge bg-success">Delivered</span>{% endif %}
+              </td>
+              <td>
+                <div class="d-flex gap-1 align-items-center flex-wrap">
+                  <form action="/orders/{{ post.id }}/status" method="post" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="status" class="form-select form-select-sm d-inline-block" style="width:auto;min-width:120px;" onchange="this.form.submit()">
+                      <option value="Pending"  {% if post.status=='Pending'  %}selected{% endif %}>Pending</option>
+                      <option value="Approved" {% if post.status=='Approved' %}selected{% endif %}>Approved</option>
+                      <option value="Delivered"{% if post.status=='Delivered'%}selected{% endif %}>Delivered</option>
+                    </select>
+                  </form>
+                  <form action="/delete-order/{{ post.id }}" method="post" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" onclick="return confirm('Delete order #{{ post.id }}?')" class="btn btn-sm btn-outline-danger" title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="9">
+                <div class="empty-state">
+                  <i class="fas fa-clipboard-list"></i>
+                  <p class="mb-2">No orders found{% if status_filter %} with status "{{ status_filter }}"{% endif %}.</p>
+                  <a href="/medicines" class="btn btn-primary btn-sm">Place First Order</a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% if pagination and pagination.pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-end">
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('orders.orders', page=pagination.prev_num, status=status_filter, q=search_q) if pagination.has_prev else '#' }}">Previous</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+        {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('orders.orders', page=p, status=status_filter, q=search_q) }}">{{ p }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('orders.orders', page=pagination.next_num, status=status_filter, q=search_q) if pagination.has_next else '#' }}">Next</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
+{% endblock %}
