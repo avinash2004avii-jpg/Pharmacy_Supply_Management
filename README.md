@@ -238,8 +238,8 @@ Edit `.env`:
 
 ```env
 SECRET_KEY=your-random-secret-key
-ADMIN_USERNAME=owner
-ADMIN_PASSWORD=ChangeMe@123
+ADMIN_USERNAME=avi
+ADMIN_PASSWORD=avi@123
 SEED_DATA=true
 # Leave DATABASE_URL blank for local SQLite
 ```
