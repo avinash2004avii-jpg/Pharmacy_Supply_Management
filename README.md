@@ -32,7 +32,7 @@
 
 | Role | Username / Email | Password |
 |---|---|---|
-| **Admin** | `owner` | `ChangeMe@123` |
+| **Admin** | `avi` | `avi@123` |
 | **Customer** | `customer@example.com` | `Customer@123` |
 
 </div>
@@ -256,7 +256,7 @@ Open **http://localhost:5000**
 
 | Role | Username / Email | Password |
 |---|---|---|
-| **Admin** | `owner` | `ChangeMe@123` |
+| **Admin** | `avi` | `avi@123` |
 | **Customer** | `customer@example.com` | `Customer@123` |
 
 > 💡 These credentials work on the live demo too — feel free to explore!
@@ -290,8 +290,8 @@ git push -u origin main
 | Key | Value |
 |---|---|
 | `SECRET_KEY` | any-strong-random-string |
-| `ADMIN_USERNAME` | owner |
-| `ADMIN_PASSWORD` | YourPassword@123 |
+| `ADMIN_USERNAME` | avi |
+| `ADMIN_PASSWORD` | avi@123 |
 | `DATABASE_URL` | your Neon connection string |
 | `SEED_DATA` | true |
 
